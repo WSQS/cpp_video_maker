@@ -14,7 +14,6 @@ using uint8 = uint8_t;
 constexpr auto width = 800;
 constexpr auto height = 600;
 
-namespace std {
 inline int rand(int min, int max) {
   if (max < min) {
     std::cerr << __FUNCTION__ << " max and min is out of order\n";
@@ -22,7 +21,10 @@ inline int rand(int min, int max) {
   }
   return std::rand() % (max - min) + min;
 }
-} // namespace std
+
+inline auto clamp(const auto &input, const auto &min, const auto &max) {
+  return std::min(std::max(input, min), max);
+}
 
 inline constexpr uint32 get_color(uint8 r, uint8 g, uint8 b, uint8 a) {
   return (static_cast<uint32_t>(a) << 24) | (static_cast<uint32_t>(b) << 16) |
@@ -59,7 +61,11 @@ struct Box {
   vector velocity{};
   int box_size{};
   uint32 color{};
-  void update() { pos = pos + velocity; }
+  void update() {
+    pos = pos + velocity;
+    pos.x = clamp(pos.x, box_size, width - box_size);
+    pos.y = clamp(pos.y, box_size, height - box_size);
+  }
   void render(Raster &raster) {
     for (int x = pos.x - box_size; x < pos.x + box_size; ++x) {
       for (int y = pos.y - box_size; y < pos.y + box_size; ++y) {
@@ -68,10 +74,10 @@ struct Box {
     }
   }
   void handle_collision() {
-    if (pos.x < box_size || pos.x > width - box_size) {
+    if (pos.x <= box_size || pos.x >= width - box_size) {
       velocity.x = -velocity.x;
     }
-    if (pos.y < box_size || pos.y > height - box_size) {
+    if (pos.y <= box_size || pos.y >= height - box_size) {
       velocity.y = -velocity.y;
     }
   }
@@ -116,8 +122,8 @@ int main() {
   std::vector<Box> boxs(10);
   for (size_t i = 0; i < 10; ++i) {
     boxs.emplace_back(
-        Box{{std::rand(0, width), std::rand(0, height)},
-            {std::rand(-10, 10), std::rand(-10, 10)},
+        Box{{rand(0, width), rand(0, height)},
+            {rand(-10, 10), rand(-10, 10)},
             100,
             get_color(std::rand(), std::rand(), std::rand(), std::rand())});
   }
