@@ -83,8 +83,7 @@ int main() {
   int box_size = 10;
   vector box_speed{10, 10};
   for (int i = 0; i < framerate * 10; ++i) {
-    box.x += box_speed.x;
-    box.y += box_speed.y;
+    box = box + box_speed;
     raster.clear(get_color(11, 23, 58, 0xFF));
     for (int x = box.x - box_size; x < box.x + box_size; ++x) {
       for (int y = box.y - box_size; y < box.y + box_size; ++y) {
