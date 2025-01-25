@@ -28,6 +28,11 @@ public:
     }
   }
   const uint32 *get_pixels() const { return pixels; }
+  void set_color(int x, int y, uint32 color) {
+    if (x < 0 || x >= width || y < 0 || y >= height)
+      return;
+    pixels[y * width + x] = color;
+  }
 };
 
 int main() {
@@ -66,12 +71,25 @@ int main() {
   }
   close(pipefd[READ_END]);
   Raster raster{};
+  int box_x = 10;
+  int box_y = 10;
+  int box_size = 10;
+  int box_x_speed = 10;
+  int box_y_speed = 10;
   for (int i = 0; i < framerate * 10; ++i) {
+    box_x += box_x_speed;
+    box_y += box_y_speed;
     raster.clear(get_color(11, 23, 58, 0xFF));
-    for (int x = 0; x < width; ++x) {
-      for (int y = 0; y < height; ++y) {
-        // pixels[y * width + x] = get_color(i, i, i, 0xFF);
+    for (int x = box_x - box_size; x < box_x + box_size; ++x) {
+      for (int y = box_y - box_size; y < box_y + box_size; ++y) {
+        raster.set_color(x, y, get_color(255, 255, 255, 255));
       }
+    }
+    if (box_x < box_size || box_x > width - box_size) {
+      box_x_speed = -box_x_speed;
+    }
+    if (box_y < box_size || box_y > height - box_size) {
+      box_y_speed = -box_y_speed;
     }
     write(pipefd[WRITE_END], raster.get_pixels(),
           sizeof(uint32) * width * height);
