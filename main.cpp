@@ -11,12 +11,8 @@ using uint32 = uint32_t;
 using uint8 = uint8_t;
 
 inline uint32 get_color(uint8 r, uint8 g, uint8 b, uint8 a) {
-  std::cout << std::hex;
-  auto result = (static_cast<uint32_t>(a) << 24) |
-                (static_cast<uint32_t>(b) << 16) |
-                (static_cast<uint32_t>(g) << 8) | (static_cast<uint32_t>(r));
-  // std::cout << "0x" << result << std::endl;
-  return result;
+  return (static_cast<uint32_t>(a) << 24) | (static_cast<uint32_t>(b) << 16) |
+         (static_cast<uint32_t>(g) << 8) | (static_cast<uint32_t>(r));
 }
 
 int main() {
