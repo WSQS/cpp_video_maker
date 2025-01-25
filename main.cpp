@@ -14,6 +14,16 @@ using uint8 = uint8_t;
 constexpr auto width = 800;
 constexpr auto height = 600;
 
+namespace std {
+inline int rand(int min, int max) {
+  if (max < min) {
+    std::cerr << __FUNCTION__ << " max and min is out of order\n";
+    std::swap(min, max);
+  }
+  return std::rand() % (max - min) + min;
+}
+} // namespace std
+
 inline constexpr uint32 get_color(uint8 r, uint8 g, uint8 b, uint8 a) {
   return (static_cast<uint32_t>(a) << 24) | (static_cast<uint32_t>(b) << 16) |
          (static_cast<uint32_t>(g) << 8) | (static_cast<uint32_t>(r));
@@ -103,12 +113,12 @@ int main() {
   }
   close(pipefd[READ_END]);
   Raster raster{};
-  std::vector<Box> boxs{};
-  for (size_t i = 0; i < 20; ++i) {
+  std::vector<Box> boxs(10);
+  for (size_t i = 0; i < 10; ++i) {
     boxs.emplace_back(
-        Box{{std::rand() % width, std ::rand() % height},
-            {10, 10},
-            10,
+        Box{{std::rand(0, width), std::rand(0, height)},
+            {std::rand(-10, 10), std::rand(-10, 10)},
+            100,
             get_color(std::rand(), std::rand(), std::rand(), std::rand())});
   }
   for (int i = 0; i < framerate * 10; ++i) {
