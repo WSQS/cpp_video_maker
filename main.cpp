@@ -35,6 +35,14 @@ public:
   }
 };
 
+struct vector {
+  int x{};
+  int y{};
+  vector operator+(const vector &input_vector) {
+    return {x + input_vector.x, y + input_vector.y};
+  }
+};
+
 int main() {
   const auto resolution = std::to_string(width) + "x" + std::to_string(height);
   constexpr auto framerate = 60;
@@ -71,25 +79,23 @@ int main() {
   }
   close(pipefd[READ_END]);
   Raster raster{};
-  int box_x = 10;
-  int box_y = 10;
+  vector box{10, 10};
   int box_size = 10;
-  int box_x_speed = 10;
-  int box_y_speed = 10;
+  vector box_speed{10, 10};
   for (int i = 0; i < framerate * 10; ++i) {
-    box_x += box_x_speed;
-    box_y += box_y_speed;
+    box.x += box_speed.x;
+    box.y += box_speed.y;
     raster.clear(get_color(11, 23, 58, 0xFF));
-    for (int x = box_x - box_size; x < box_x + box_size; ++x) {
-      for (int y = box_y - box_size; y < box_y + box_size; ++y) {
+    for (int x = box.x - box_size; x < box.x + box_size; ++x) {
+      for (int y = box.y - box_size; y < box.y + box_size; ++y) {
         raster.set_color(x, y, get_color(255, 255, 255, 255));
       }
     }
-    if (box_x < box_size || box_x > width - box_size) {
-      box_x_speed = -box_x_speed;
+    if (box.x < box_size || box.x > width - box_size) {
+      box_speed.x = -box_speed.x;
     }
-    if (box_y < box_size || box_y > height - box_size) {
-      box_y_speed = -box_y_speed;
+    if (box.y < box_size || box.y > height - box_size) {
+      box_speed.y = -box_speed.y;
     }
     write(pipefd[WRITE_END], raster.get_pixels(),
           sizeof(uint32) * width * height);
