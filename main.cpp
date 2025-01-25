@@ -102,8 +102,6 @@ int main() {
   close(pipefd[READ_END]);
   Raster raster{};
   Box box{{10, 10}, {10, 10}, 10};
-  int box_size = 10;
-  vector box_speed{10, 10};
   for (int i = 0; i < framerate * 10; ++i) {
     box.update();
     raster.clear(get_color(11, 23, 58, 0xFF));
