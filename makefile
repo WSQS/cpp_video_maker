@@ -1,5 +1,5 @@
 main: main.cpp
-	g++ -s main.cpp -Wall -Wextra --std=c++23 -o main
+	g++ main.cpp -Wall -Wextra -pg -g -O3 --std=c++23 -o main
 
 test: main
 	./main
