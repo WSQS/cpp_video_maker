@@ -125,7 +125,7 @@ int main() {
     boxs.emplace_back(
         Box{{rand(0, width), rand(0, height)},
             {rand(-10, 10), rand(-10, 10)},
-            rand(1, 50),
+            rand(20, 30),
             get_color(std::rand(), std::rand(), std::rand(), std::rand())});
   }
   for (int i = 0; i < framerate * 10; ++i) {
@@ -140,12 +140,20 @@ int main() {
           if ((box_obj.pos.x - box.pos.x) *
                   (box_obj.velocity.x - box.velocity.x) <
               0) {
-            std::swap(box.velocity.x, box_obj.velocity.x);
+            auto temp = box.velocity.x * box.box_size;
+            auto temp_obj = box_obj.velocity.x * box_obj.box_size;
+            box.velocity.x = temp_obj / box.box_size;
+            box_obj.velocity.x = temp / box_obj.box_size;
+            // std::swap(box.velocity.x, box_obj.velocity.x);
           }
           if ((box_obj.pos.y - box.pos.y) *
                   (box_obj.velocity.y - box.velocity.y) <
               0) {
-            std::swap(box.velocity.y, box_obj.velocity.y);
+            auto temp = box.velocity.y * box.box_size;
+            auto temp_obj = box_obj.velocity.y * box_obj.box_size;
+            box.velocity.y = temp_obj / box.box_size;
+            box_obj.velocity.y = temp / box_obj.box_size;
+            // std::swap(box.velocity.y, box_obj.velocity.y);
           }
         }
       }
