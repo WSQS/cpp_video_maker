@@ -119,13 +119,13 @@ int main() {
   }
   close(pipefd[READ_END]);
   Raster raster{};
-  constexpr auto box_num = 1000;
+  constexpr auto box_num = 40;
   std::vector<Box> boxs(box_num);
   for (size_t i = 0; i < box_num; ++i) {
     boxs.emplace_back(
         Box{{rand(0, width), rand(0, height)},
             {rand(-10, 10), rand(-10, 10)},
-            1,
+            rand(1, 50),
             get_color(std::rand(), std::rand(), std::rand(), std::rand())});
   }
   for (int i = 0; i < framerate * 10; ++i) {
@@ -134,6 +134,21 @@ int main() {
       box.update();
       box.render(raster);
       box.handle_collision();
+      for (auto &box_obj : boxs) {
+        if (abs(box.pos.x - box_obj.pos.x) < box.box_size + box_obj.box_size &&
+            abs(box.pos.y - box_obj.pos.y) < box.box_size + box_obj.box_size) {
+          if ((box_obj.pos.x - box.pos.x) *
+                  (box_obj.velocity.x - box.velocity.x) <
+              0) {
+            std::swap(box.velocity.x, box_obj.velocity.x);
+          }
+          if ((box_obj.pos.y - box.pos.y) *
+                  (box_obj.velocity.y - box.velocity.y) <
+              0) {
+            std::swap(box.velocity.y, box_obj.velocity.y);
+          }
+        }
+      }
     }
     write(pipefd[WRITE_END], raster.get_pixels(),
           sizeof(uint32) * width * height);
