@@ -13,16 +13,22 @@ using uint8 = uint8_t;
 constexpr auto width = 800;
 constexpr auto height = 600;
 
-inline uint32 get_color(uint8 r, uint8 g, uint8 b, uint8 a) {
+inline constexpr uint32 get_color(uint8 r, uint8 g, uint8 b, uint8 a) {
   return (static_cast<uint32_t>(a) << 24) | (static_cast<uint32_t>(b) << 16) |
          (static_cast<uint32_t>(g) << 8) | (static_cast<uint32_t>(r));
 }
 
-inline void clear(uint32 pixels[width * height]) {
-  for (int i = 0; i < width * height; ++i) {
-    pixels[i] = 0x00000000;
+class Raster {
+  uint32 pixels[width * height];
+
+public:
+  inline void clear(uint32 background) {
+    for (int i = 0; i < width * height; ++i) {
+      pixels[i] = background;
+    }
   }
-}
+  const uint32 *get_pixels() const { return pixels; }
+};
 
 int main() {
   const auto resolution = std::to_string(width) + "x" + std::to_string(height);
@@ -59,16 +65,16 @@ int main() {
     }
   }
   close(pipefd[READ_END]);
-  uint32 pixels[width * height]{};
-
+  Raster raster{};
   for (int i = 0; i < framerate * 10; ++i) {
-    clear(pixels);
+    raster.clear(get_color(11, 23, 58, 0xFF));
     for (int x = 0; x < width; ++x) {
       for (int y = 0; y < height; ++y) {
-        pixels[y * width + x] = get_color(i, i, i, 0xFF);
+        // pixels[y * width + x] = get_color(i, i, i, 0xFF);
       }
     }
-    write(pipefd[WRITE_END], pixels, sizeof(*pixels) * width * height);
+    write(pipefd[WRITE_END], raster.get_pixels(),
+          sizeof(uint32) * width * height);
   }
   close(pipefd[WRITE_END]);
   wait(nullptr);
