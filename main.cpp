@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <vector>
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -47,11 +48,12 @@ struct Box {
   vector pos{};
   vector velocity{};
   int box_size{};
+  uint32 color{};
   void update() { pos = pos + velocity; }
   void render(Raster &raster) {
     for (int x = pos.x - box_size; x < pos.x + box_size; ++x) {
       for (int y = pos.y - box_size; y < pos.y + box_size; ++y) {
-        raster.set_color(x, y, get_color(255, 255, 255, 255));
+        raster.set_color(x, y, color);
       }
     }
   }
@@ -101,12 +103,21 @@ int main() {
   }
   close(pipefd[READ_END]);
   Raster raster{};
-  Box box{{10, 10}, {10, 10}, 10};
+  std::vector<Box> boxs{};
+  for (size_t i = 0; i < 20; ++i) {
+    boxs.emplace_back(
+        Box{{std::rand() % width, std ::rand() % height},
+            {10, 10},
+            10,
+            get_color(std::rand(), std::rand(), std::rand(), std::rand())});
+  }
   for (int i = 0; i < framerate * 10; ++i) {
-    box.update();
     raster.clear(get_color(11, 23, 58, 0xFF));
-    box.render(raster);
-    box.handle_collision();
+    for (auto &box : boxs) {
+      box.update();
+      box.render(raster);
+      box.handle_collision();
+    }
     write(pipefd[WRITE_END], raster.get_pixels(),
           sizeof(uint32) * width * height);
   }
