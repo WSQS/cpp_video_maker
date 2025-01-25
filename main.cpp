@@ -42,8 +42,8 @@ public:
   }
   const uint32 *get_pixels() const { return pixels; }
   void set_color(int x, int y, uint32 color) {
-    if (x < 0 || x >= width || y < 0 || y >= height)
-      return;
+    // if (x < 0 || x >= width || y < 0 || y >= height)
+    //   return;
     pixels[y * width + x] = color;
   }
 };
@@ -119,12 +119,13 @@ int main() {
   }
   close(pipefd[READ_END]);
   Raster raster{};
-  std::vector<Box> boxs(10);
-  for (size_t i = 0; i < 10; ++i) {
+  constexpr auto box_num = 1000;
+  std::vector<Box> boxs(box_num);
+  for (size_t i = 0; i < box_num; ++i) {
     boxs.emplace_back(
         Box{{rand(0, width), rand(0, height)},
             {rand(-10, 10), rand(-10, 10)},
-            100,
+            1,
             get_color(std::rand(), std::rand(), std::rand(), std::rand())});
   }
   for (int i = 0; i < framerate * 10; ++i) {
