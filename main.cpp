@@ -59,25 +59,25 @@ struct vector {
 struct Box {
   vector pos{};
   vector velocity{};
-  int box_size{};
+  int size{};
   uint32 color{};
   void update() {
     pos = pos + velocity;
-    pos.x = clamp(pos.x, box_size, width - box_size);
-    pos.y = clamp(pos.y, box_size, height - box_size);
+    pos.x = clamp(pos.x, size, width - size);
+    pos.y = clamp(pos.y, size, height - size);
   }
   void render(Raster &raster) {
-    for (int x = pos.x - box_size; x < pos.x + box_size; ++x) {
-      for (int y = pos.y - box_size; y < pos.y + box_size; ++y) {
+    for (int x = pos.x - size; x < pos.x + size; ++x) {
+      for (int y = pos.y - size; y < pos.y + size; ++y) {
         raster.set_color(x, y, color);
       }
     }
   }
   void handle_collision() {
-    if (pos.x <= box_size || pos.x >= width - box_size) {
+    if (pos.x <= size || pos.x >= width - size) {
       velocity.x = -velocity.x;
     }
-    if (pos.y <= box_size || pos.y >= height - box_size) {
+    if (pos.y <= size || pos.y >= height - size) {
       velocity.y = -velocity.y;
     }
   }
