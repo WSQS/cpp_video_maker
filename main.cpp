@@ -12,7 +12,7 @@ using uint32 = uint32_t;
 using uint8 = uint8_t;
 
 constexpr auto width = 800;
-constexpr auto height = 600;
+constexpr auto height = 800;
 
 inline int rand(int min, int max) {
   if (max < min) {
@@ -85,7 +85,7 @@ struct Box {
 
 int main() {
   const auto resolution = std::to_string(width) + "x" + std::to_string(height);
-  constexpr auto framerate = 60;
+  constexpr auto framerate = 10;
   constexpr auto READ_END = 0;
   constexpr auto WRITE_END = 1;
   int pipefd[2];
@@ -119,7 +119,7 @@ int main() {
   }
   close(pipefd[READ_END]);
   Raster raster{};
-  constexpr auto box_num = 40;
+  constexpr auto box_num = 1;
   std::vector<Box> boxs(box_num);
   for (size_t i = 0; i < box_num; ++i) {
     boxs.emplace_back(
@@ -129,10 +129,22 @@ int main() {
             get_color(std::rand(), std::rand(), std::rand(), std::rand())});
   }
   for (int i = 0; i < framerate * 10; ++i) {
-    raster.clear(get_color(11, 23, 58, 0xFF));
+    // raster.clear(get_color(11, 23, 58, 0xFF));
     for (auto &box : boxs) {
       box.update();
       box.render(raster);
+      box = Box{{rand(0, width), rand(0, height)},
+                {rand(-10, 10), rand(-10, 10)},
+                rand(20, 30),
+                get_color(std::rand(), std::rand(), std::rand(), std::rand())};
+
+      // boxs.emplace_back(
+      //     Box{{rand(0, width), rand(0, height)},
+      //         {rand(-10, 10), rand(-10, 10)},
+      //         rand(20, 30),
+      //         get_color(std::rand(), std::rand(), std::rand(),
+      //         std::rand())});
+
       box.handle_collision();
       for (auto &box_obj : boxs) {
         if (abs(box.pos.x - box_obj.pos.x) < box.box_size + box_obj.box_size &&
@@ -140,20 +152,20 @@ int main() {
           if ((box_obj.pos.x - box.pos.x) *
                   (box_obj.velocity.x - box.velocity.x) <
               0) {
-            auto temp = box.velocity.x * box.box_size;
-            auto temp_obj = box_obj.velocity.x * box_obj.box_size;
-            box.velocity.x = temp_obj / box.box_size;
-            box_obj.velocity.x = temp / box_obj.box_size;
-            // std::swap(box.velocity.x, box_obj.velocity.x);
+            // auto temp = box.velocity.x * box.box_size;
+            // auto temp_obj = box_obj.velocity.x * box_obj.box_size;
+            // box.velocity.x = temp_obj / box.box_size;
+            // box_obj.velocity.x = temp / box_obj.box_size;
+            std::swap(box.velocity.x, box_obj.velocity.x);
           }
           if ((box_obj.pos.y - box.pos.y) *
                   (box_obj.velocity.y - box.velocity.y) <
               0) {
-            auto temp = box.velocity.y * box.box_size;
-            auto temp_obj = box_obj.velocity.y * box_obj.box_size;
-            box.velocity.y = temp_obj / box.box_size;
-            box_obj.velocity.y = temp / box_obj.box_size;
-            // std::swap(box.velocity.y, box_obj.velocity.y);
+            // auto temp = box.velocity.y * box.box_size;
+            // auto temp_obj = box_obj.velocity.y * box_obj.box_size;
+            // box.velocity.y = temp_obj / box.box_size;
+            // box_obj.velocity.y = temp / box_obj.box_size;
+            std::swap(box.velocity.y, box_obj.velocity.y);
           }
         }
       }
