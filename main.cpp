@@ -1,4 +1,5 @@
 #include <cerrno>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <iostream>
@@ -83,6 +84,34 @@ struct Box {
   }
 };
 
+struct Circle {
+  vector pos{};
+  vector velocity{};
+  int size{};
+  uint32 color{};
+  void update() {
+    pos = pos + velocity;
+    pos.x = clamp(pos.x, size, width - size);
+    pos.y = clamp(pos.y, size, height - size);
+  }
+  void render(Raster &raster) {
+    for (int x = pos.x - size; x < pos.x + size; ++x) {
+      for (int y = pos.y - size; y < pos.y + size; ++y) {
+        if (std::pow(pos.x - x, 2) + std::pow(pos.y - y, 2) < std::pow(size, 2))
+          raster.set_color(x, y, color);
+      }
+    }
+  }
+  void handle_collision() {
+    if (pos.x <= size || pos.x >= width - size) {
+      velocity.x = -velocity.x;
+    }
+    if (pos.y <= size || pos.y >= height - size) {
+      velocity.y = -velocity.y;
+    }
+  }
+};
+
 int main() {
   const auto resolution = std::to_string(width) + "x" + std::to_string(height);
   constexpr auto framerate = 10;
@@ -120,23 +149,24 @@ int main() {
   close(pipefd[READ_END]);
   Raster raster{};
   constexpr auto box_num = 1;
-  std::vector<Box> boxs(box_num);
+  std::vector<Circle> boxs(box_num);
   for (size_t i = 0; i < box_num; ++i) {
     boxs.emplace_back(
-        Box{{rand(0, width), rand(0, height)},
-            {rand(-10, 10), rand(-10, 10)},
-            rand(20, 30),
-            get_color(std::rand(), std::rand(), std::rand(), std::rand())});
+        Circle{{rand(0, width), rand(0, height)},
+               {rand(-10, 10), rand(-10, 10)},
+               rand(20, 30),
+               get_color(std::rand(), std::rand(), std::rand(), std::rand())});
   }
   for (int i = 0; i < framerate * 10; ++i) {
     // raster.clear(get_color(11, 23, 58, 0xFF));
     for (auto &box : boxs) {
       box.update();
       box.render(raster);
-      box = Box{{rand(0, width), rand(0, height)},
-                {rand(-10, 10), rand(-10, 10)},
-                rand(20, 30),
-                get_color(std::rand(), std::rand(), std::rand(), std::rand())};
+      box =
+          Circle{{rand(0, width), rand(0, height)},
+                 {rand(-10, 10), rand(-10, 10)},
+                 rand(20, 30),
+                 get_color(std::rand(), std::rand(), std::rand(), std::rand())};
 
       // boxs.emplace_back(
       //     Box{{rand(0, width), rand(0, height)},
