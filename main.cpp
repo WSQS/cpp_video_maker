@@ -146,29 +146,31 @@ int main() {
       //         std::rand())});
 
       box.handle_collision();
-      for (auto &box_obj : boxs) {
-        if (abs(box.pos.x - box_obj.pos.x) < box.box_size + box_obj.box_size &&
-            abs(box.pos.y - box_obj.pos.y) < box.box_size + box_obj.box_size) {
-          if ((box_obj.pos.x - box.pos.x) *
-                  (box_obj.velocity.x - box.velocity.x) <
-              0) {
-            // auto temp = box.velocity.x * box.box_size;
-            // auto temp_obj = box_obj.velocity.x * box_obj.box_size;
-            // box.velocity.x = temp_obj / box.box_size;
-            // box_obj.velocity.x = temp / box_obj.box_size;
-            std::swap(box.velocity.x, box_obj.velocity.x);
-          }
-          if ((box_obj.pos.y - box.pos.y) *
-                  (box_obj.velocity.y - box.velocity.y) <
-              0) {
-            // auto temp = box.velocity.y * box.box_size;
-            // auto temp_obj = box_obj.velocity.y * box_obj.box_size;
-            // box.velocity.y = temp_obj / box.box_size;
-            // box_obj.velocity.y = temp / box_obj.box_size;
-            std::swap(box.velocity.y, box_obj.velocity.y);
-          }
-        }
-      }
+      // for (auto &box_obj : boxs) {
+      //   if (abs(box.pos.x - box_obj.pos.x) < box.box_size + box_obj.box_size
+      //   &&
+      //       abs(box.pos.y - box_obj.pos.y) < box.box_size + box_obj.box_size)
+      //       {
+      //     if ((box_obj.pos.x - box.pos.x) *
+      //             (box_obj.velocity.x - box.velocity.x) <
+      //         0) {
+      //       // auto temp = box.velocity.x * box.box_size;
+      //       // auto temp_obj = box_obj.velocity.x * box_obj.box_size;
+      //       // box.velocity.x = temp_obj / box.box_size;
+      //       // box_obj.velocity.x = temp / box_obj.box_size;
+      //       std::swap(box.velocity.x, box_obj.velocity.x);
+      //     }
+      //     if ((box_obj.pos.y - box.pos.y) *
+      //             (box_obj.velocity.y - box.velocity.y) <
+      //         0) {
+      //       // auto temp = box.velocity.y * box.box_size;
+      //       // auto temp_obj = box_obj.velocity.y * box_obj.box_size;
+      //       // box.velocity.y = temp_obj / box.box_size;
+      //       // box_obj.velocity.y = temp / box_obj.box_size;
+      //       std::swap(box.velocity.y, box_obj.velocity.y);
+      //     }
+      //   }
+      // }
     }
     write(pipefd[WRITE_END], raster.get_pixels(),
           sizeof(uint32) * width * height);
