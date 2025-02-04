@@ -10,10 +10,62 @@
 #include <unistd.h>
 
 using uint32 = uint32_t;
-using uint8 = uint8_t;
+using uint8 = uint_fast8_t;
 
 constexpr auto width = 800;
 constexpr auto height = 800;
+
+class pipe_wrapper {
+    constexpr static auto READ_END = 0;
+    constexpr static auto WRITE_END = 1;
+    enum class pipe_statues : uint8 { unavailable, available, read, write } statues{};
+    int pipe_des[2]{};
+
+public:
+    pipe_wrapper() {
+        if (pipe(pipe_des)) {
+            std::cerr << "ERROR: pipe failed: " << strerror(errno) << std::endl;
+            statues = pipe_statues::unavailable;
+        } else {
+            statues = pipe_statues::available;
+        }
+    }
+    ~pipe_wrapper() {
+        switch (statues) {
+        case pipe_statues::available:
+            close(pipe_des[READ_END]);
+            close(pipe_des[WRITE_END]);
+            break;
+        case pipe_statues::read:
+            close(pipe_des[READ_END]);
+            break;
+        case pipe_statues::write:
+            close(pipe_des[WRITE_END]);
+            break;
+        default:
+            break;
+        }
+    }
+    bool valid() const { return statues != pipe_statues::unavailable; }
+    auto read_end() {
+        if (statues == pipe_statues::available) {
+            statues = pipe_statues::read;
+            close(pipe_des[WRITE_END]);
+        }
+        if (statues == pipe_statues::read)
+            return pipe_des[READ_END];
+        return -1;
+    }
+    auto write_end() {
+        if (statues == pipe_statues::available) {
+            statues = pipe_statues::write;
+            close(pipe_des[READ_END]);
+        }
+        if (statues == pipe_statues::write)
+            return pipe_des[WRITE_END];
+        return -1;
+    }
+};
 
 inline int rand(int min, int max) {
   if (max < min) {
@@ -115,20 +167,14 @@ struct Circle {
 int main() {
   const auto resolution = std::to_string(width) + "x" + std::to_string(height);
   constexpr auto framerate = 10;
-  constexpr auto READ_END = 0;
-  constexpr auto WRITE_END = 1;
-  int pipefd[2];
-  if (pipe(pipefd) < 0) {
-    std::cerr << "ERROR: could not create a pipe: " << strerror(errno)
-              << std::endl;
+  pipe_wrapper pipe_des;
+  if (!pipe_des.valid()) {
     return 1;
   }
   std::cout << "hello world" << std::endl;
   auto pid = fork();
   if (!pid) {
-    dup2(pipefd[READ_END], STDIN_FILENO);
-    close(pipefd[WRITE_END]);
-    std::cout << pid << std::endl;
+    dup2(pipe_des.read_end(), STDIN_FILENO);
     int ret =
         execlp("ffmpeg", "ffmpeg",
                //"-loglevel", "verbose",
@@ -146,7 +192,6 @@ int main() {
       exit(1);
     }
   }
-  close(pipefd[READ_END]);
   Raster raster{};
   constexpr auto box_num = 1;
   std::vector<Circle> boxs(box_num);
@@ -202,10 +247,10 @@ int main() {
       //   }
       // }
     }
-    write(pipefd[WRITE_END], raster.get_pixels(),
+    write(pipe_des.write_end(), raster.get_pixels(),
           sizeof(uint32) * width * height);
   }
-  close(pipefd[WRITE_END]);
+  close(pipe_des.write_end());
   wait(nullptr);
   std::cout << "Finish\n";
   return 0;
